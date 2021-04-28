@@ -12,7 +12,7 @@
 
 ## API
 
-### 号码信息解析
+### 号码信息解析
 
 ```rust
 
@@ -72,13 +72,13 @@ id.len();
 ```rust
 
 // 香港身份证校验
-idcard::hk::validate("632123");
+idcard::hk::validate("G123456(A)");
 
 // 澳门身份证校验
-idcard::mo::validate("632123");
+idcard::mo::validate("1123456(0)");
 
 // 台湾身份证校验
-idcard::tw::validate("632123");
+idcard::tw::validate("A123456789");
 
 ```
 
