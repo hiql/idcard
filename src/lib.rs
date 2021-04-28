@@ -6,9 +6,9 @@ use rand::{thread_rng, Rng};
 use std::collections::HashMap;
 use std::fmt;
 
-pub mod region;
 pub mod hk;
 pub mod mo;
+pub mod region;
 pub mod tw;
 
 const ID_V1_LEN: usize = 15;
@@ -401,9 +401,22 @@ fn validate_v2(number: &str) -> bool {
     false
 }
 
-pub fn new_fake(region: &str, year: i32, month: i32, date: i32) -> Result<String, Error> {
+pub fn new_fake(
+    region: &str,
+    year: i32,
+    month: i32,
+    date: i32,
+    gender: Gender,
+) -> Result<String, Error> {
     let mut rng = thread_rng();
-    let seq = rng.gen_range(0..=100);
+    let mut seq = rng.gen_range(0..999);
+
+    if gender == Gender::Male && seq % 2 == 0 {
+        seq += 1;
+    }
+    if gender == Gender::Female && seq % 2 == 1 {
+        seq += 1;
+    }
 
     let seg17 = format!("{}{}{:0>2}{:0>2}{:0>3}", region, year, month, date, seq);
 
@@ -521,17 +534,17 @@ mod tests {
 
     #[test]
     fn generate_fake_id() {
-        let f = new_fake("654325", 2018, 2, 28).unwrap();
+        let f = new_fake("654325", 2018, 2, 28, Gender::Male).unwrap();
         let id = Identity::new(&f);
         print_details(&id);
         assert_eq!(id.is_valid(), true);
 
-        let f = new_fake("310104", 2020, 2, 29).unwrap();
+        let f = new_fake("310104", 2020, 2, 29, Gender::Female).unwrap();
         let id = Identity::new(&f);
         print_details(&id);
         assert_eq!(id.is_valid(), true);
 
-        let f = new_fake("230000", 1970, 2, 29).unwrap();
+        let f = new_fake("230000", 1970, 2, 29, Gender::Male).unwrap();
         let id = Identity::new(&f);
         print_details(&id);
         assert_eq!(id.is_valid(), false);

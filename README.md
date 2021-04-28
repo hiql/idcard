@@ -104,7 +104,7 @@ idcard::upgrade("632123820927051");
 idcard::validate("632123820927051");
 
 // 生成一个有效的虚假身份证号码
-idcard::new_fake("654325", 2018, 2, 28);
+idcard::new_fake("654325", 2018, 2, 28， Gender::Male);
 
 ```
 
