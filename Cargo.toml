@@ -1,0 +1,11 @@
+[package]
+name = "idcard"
+version = "0.1.0"
+authors = ["hiql <qiu_lin@163.com>"]
+edition = "2018"
+
+[dependencies]
+lazy_static = "1.4"
+chrono = "0.4"
+regex = "1"
+rand = "0.8"
