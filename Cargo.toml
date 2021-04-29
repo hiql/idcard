@@ -3,6 +3,12 @@ name = "idcard"
 version = "0.1.1"
 authors = ["hiql <qiu_lin@163.com>"]
 edition = "2018"
+license = "MIT"
+readme = "README.md"
+description = """
+Chinese Identify Card Utilities.
+"""
+repository = "https://github.com/hiql/idcard"
 
 [dependencies]
 lazy_static = "1.4"
