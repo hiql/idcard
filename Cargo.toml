@@ -1,6 +1,6 @@
 [package]
 name = "idcard"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["hiql <qiu_lin@163.com>"]
 edition = "2018"
 license = "MIT"
@@ -9,6 +9,7 @@ description = """
 Chinese Identify Card Utilities.
 """
 repository = "https://github.com/hiql/idcard"
+documentation = "https://docs.rs/idcard"
 
 [dependencies]
 lazy_static = "1.4"
