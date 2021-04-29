@@ -409,6 +409,11 @@ pub fn new_fake(
     date: i32,
     gender: Gender,
 ) -> Result<String, Error> {
+    if region.len() != 6 {
+        return Err(Error::GenerateFakeIDError(
+            "The length of region code must be 6 digits".to_string(),
+        ));
+    }
     let mut rng = thread_rng();
     let mut seq = rng.gen_range(0..999);
 
@@ -419,7 +424,15 @@ pub fn new_fake(
         seq += 1;
     }
 
-    let seg17 = format!("{}{}{:0>2}{:0>2}{:0>3}", region, year, month, date, seq);
+    let birthdate_str = format!("{}{:0>2}{:0>2}", year, month, date);
+    let birth_date = NaiveDate::parse_from_str(&birthdate_str, "%Y%m%d");
+    if birth_date.is_err() {
+        return Err(Error::GenerateFakeIDError(
+            "Invalid birth of date".to_string(),
+        ));
+    }
+
+    let seg17 = format!("{}{}{:0>3}", region, birthdate_str, seq);
 
     let iarr = match string_to_integer_array(&seg17) {
         Ok(value) => value,
@@ -468,6 +481,7 @@ impl FakeOptions {
         self.gender = Some(gender);
     }
 }
+
 pub fn rand_fake() -> Result<String, Error> {
     let option = FakeOptions::default();
     rand_fake_with_opts(&option)
@@ -671,15 +685,16 @@ mod tests {
         print_details(&id);
         assert_eq!(id.is_valid(), true);
 
-        let f = new_fake("230000", 1970, 2, 29, Gender::Male).unwrap();
-        let id = Identity::new(&f);
-        print_details(&id);
-        assert_eq!(id.is_valid(), false);
-
         for i in 1..=10 {
             let num = rand_fake().unwrap();
             println!("{}: {}", i, num);
         }
+
+        let f = new_fake("2300", 1970, 2, 28, Gender::Male);
+        assert_eq!(f.is_err(), true);
+
+        let f = new_fake("230000", 1970, 2, 29, Gender::Male);
+        assert_eq!(f.is_err(), true);
     }
 
     #[test]
