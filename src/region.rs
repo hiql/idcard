@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use rand::{thread_rng, Rng};
 
 lazy_static! {
     static ref REGION_CODE: HashMap<&'static str, &'static str> = {
@@ -6340,6 +6341,15 @@ lazy_static! {
         map.insert("820000", "澳门特别行政区");
         map
     };
+    static ref CODES:Vec<&'static str> = init_code_vec();
+}
+
+fn init_code_vec() -> Vec<&'static str> {
+    let mut v: Vec<&'static str> = Vec::new();
+    for k in REGION_CODE.keys() {
+        v.push(k);
+    } 
+    v
 }
 
 pub fn query(code: &str) -> Option<String> {
@@ -6349,5 +6359,46 @@ pub fn query(code: &str) -> Option<String> {
     match REGION_CODE.get(code) {
         Some(name) => Some(name.to_string()),
         None => None
+    }
+}
+
+pub fn rand_code() -> String {
+    let mut rng = thread_rng();
+    let i = rng.gen_range(0..CODES.len());
+    CODES[i].to_string()
+}
+
+pub fn rand_code_starts_with(s: &str) -> Option<String> {
+    if s.is_empty() {
+        return None;
+    }
+    let v = CODES.iter().filter(|c| c.starts_with(s)).collect::<Vec<_>>();
+    if v.is_empty() {
+        return None;
+    }
+    let mut rng = thread_rng();
+    let i = rng.gen_range(0..v.len());
+    Some(v[i].to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn get_rand_codes() {
+        for i in 1..=10 {
+            println!("{}: {}", i, rand_code());
+        }
+    }
+
+    #[test]
+    fn get_rand_code_starts_with() {
+        println!("{:?}", rand_code_starts_with("33"));
+    }
+
+    #[test]
+    fn query_by_code() {
+        assert_eq!(query("640000"), Some("宁夏回族自治区".to_string()));
     }
 }

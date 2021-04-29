@@ -9,6 +9,7 @@
 - 解析号码相关信息（性别/年龄/出生年月日/省份/生肖等）
 - 归属地信息查询
 - 支持港澳台身份证号码校验
+- 生成18位身份证号码
 
 ## API
 
@@ -103,8 +104,19 @@ idcard::upgrade("632123820927051");
 // 15/18位号码校验
 idcard::validate("632123820927051");
 
-// 生成一个有效的虚假身份证号码
+// 生成假身份证号码
 idcard::new_fake("654325", 2018, 2, 28， Gender::Male);
+
+// 随机生成假身份证号码
+idcard::rand_fake();
+
+// 根据参数随机生成假身份证号码
+let mut opts = FakeOptions::default();
+opts.set_region("3301");
+//opts.set_gender(Gender::Female);
+opts.set_min_year(1990);
+opts.set_max_year(2000);
+idcard::rand_fake_with_opts(&opts);
 
 ```
 
