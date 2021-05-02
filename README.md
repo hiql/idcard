@@ -15,6 +15,13 @@
 
 ### 号码信息
 
+```toml
+
+[dependencies]
+idcard = "0.1"
+
+```
+
 ```rust
 
 use idcard::Identity;
