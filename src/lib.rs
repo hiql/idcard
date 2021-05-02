@@ -1,3 +1,10 @@
+//!  Chinese Indentity Card Utilities
+//!
+//! This package provides utilities to validate ID number, to extract detailed
+//! ID information, to upgrade ID number from 15-digit to 18-digit, to generate
+//! fake ID number, and some related functions for HongKong/Macau/Taiwan ID.
+//!
+
 #[macro_use]
 extern crate lazy_static;
 
@@ -69,6 +76,7 @@ lazy_static! {
     };
 }
 
+/// Custom error type.
 #[derive(Debug)]
 pub enum Error {
     InvalidNumber,
@@ -88,12 +96,14 @@ impl fmt::Display for Error {
     }
 }
 
+/// The type of demographic genders
 #[derive(Debug, PartialEq, PartialOrd)]
 pub enum Gender {
     Male,
     Female,
 }
 
+/// An object representation of the Chinese ID.
 #[derive(Debug, PartialEq, PartialOrd)]
 pub struct Identity {
     number: String,
@@ -101,9 +111,10 @@ pub struct Identity {
 }
 
 impl Identity {
-    pub fn new(number: &str) -> Identity {
+    /// Creates an identity object from given number.
+    pub fn new(number: &str) -> Self {
         let mut id = Identity {
-            number: number.trim().to_ascii_uppercase().to_owned(),
+            number: number.trim().to_ascii_uppercase(),
             valid: false,
         };
         if id.number.len() == ID_V1_LEN {
@@ -122,10 +133,12 @@ impl Identity {
         id
     }
 
+    /// Returns the ID number.
     pub fn number(&self) -> String {
         self.number.clone()
     }
 
+    /// Returns the date of birth(yyyy-mm-dd).
     pub fn birth_date(&self) -> Option<String> {
         if !self.is_valid() {
             return None;
@@ -138,6 +151,7 @@ impl Identity {
         Some(format!("{}-{}-{}", year, month, date))
     }
 
+    /// Returns the year of birth.
     pub fn year(&self) -> Option<i32> {
         if !self.is_valid() {
             return None;
@@ -150,6 +164,7 @@ impl Identity {
         }
     }
 
+    /// Returns the month of birth.
     pub fn month(&self) -> Option<i32> {
         if !self.is_valid() {
             return None;
@@ -162,6 +177,7 @@ impl Identity {
         }
     }
 
+    /// Returns the day in the month of the birth.
     pub fn date(&self) -> Option<i32> {
         if !self.is_valid() {
             return None;
@@ -174,19 +190,21 @@ impl Identity {
         }
     }
 
+    /// Calculates the age based on the computer's local date
     pub fn age(&self) -> Option<u32> {
         if !self.is_valid() {
             return None;
         }
 
         if let Ok(year) = self.number[6..10].parse::<u32>() {
-            let current = chrono::Local::now().year() as u32;
+            let current = Local::now().year() as u32;
             Some(current - year)
         } else {
             None
         }
     }
 
+    /// Returns the gender.
     pub fn gender(&self) -> Option<Gender> {
         if !self.is_valid() {
             return None;
@@ -203,6 +221,7 @@ impl Identity {
         }
     }
 
+    /// Returns the province name based on the first 2 digits of the number
     pub fn province(&self) -> Option<String> {
         if !self.is_valid() {
             return None;
@@ -215,6 +234,7 @@ impl Identity {
         }
     }
 
+    /// Returns the region name based on the first 6 digits of the number
     pub fn region(&self) -> Option<String> {
         if !self.is_valid() {
             return None;
@@ -223,6 +243,7 @@ impl Identity {
         region::query(&self.number[0..6])
     }
 
+    /// Returns the constellation by the date of birth.
     pub fn constellation(&self) -> Option<String> {
         if !self.is_valid() {
             return None;
@@ -267,6 +288,7 @@ impl Identity {
         Some(result.to_owned())
     }
 
+    /// Returns the Chinese Era by the year of birth.
     pub fn chinese_era(&self) -> Option<String> {
         if !self.is_valid() {
             return None;
@@ -286,6 +308,7 @@ impl Identity {
         Some(era)
     }
 
+    /// Returns the Chinese Zodiac animal by the year of birth.
     pub fn chinese_zodiac(&self) -> Option<String> {
         if !self.is_valid() {
             return None;
@@ -302,19 +325,23 @@ impl Identity {
         Some(zod.to_owned())
     }
 
+    /// Checks if the number is valid.
     pub fn is_valid(&self) -> bool {
         self.valid
     }
 
+    /// Checks if the number is empty.
     pub fn is_empty(&self) -> bool {
         self.number.is_empty()
     }
 
+    /// Returns the length of the number.
     pub fn len(&self) -> usize {
         self.number.len()
     }
 }
 
+/// Upgrades a Chinese ID number from 15-digit to 18-digit.
 pub fn upgrade(number: &str) -> Result<String, Error> {
     let number = number.trim().to_ascii_uppercase();
     if number.len() == ID_V1_LEN && is_digital(&number) {
@@ -338,7 +365,7 @@ pub fn upgrade(number: &str) -> Result<String, Error> {
         };
 
         let weight = get_weights_sum(&iarr);
-        if let Some(code) = get_check_code_18(weight) {
+        if let Some(code) = get_check_code(weight) {
             idv2.push_str(&code);
             Ok(idv2)
         } else {
@@ -349,6 +376,7 @@ pub fn upgrade(number: &str) -> Result<String, Error> {
     }
 }
 
+/// Validates a Chinese ID number(only supports 15/18-digit).
 pub fn validate(number: &str) -> bool {
     let number = number.trim().to_ascii_uppercase();
     if number.len() == ID_V1_LEN {
@@ -379,6 +407,7 @@ fn validate_v2(number: &str) -> bool {
     if number.len() != ID_V2_LEN {
         return false;
     }
+
     let birth_date = NaiveDate::parse_from_str(&number[6..14], "%Y%m%d");
     if !birth_date.is_ok() {
         return false;
@@ -393,7 +422,7 @@ fn validate_v2(number: &str) -> bool {
         };
 
         let sum17 = get_weights_sum(&iarr);
-        if let Some(code) = get_check_code_18(sum17) {
+        if let Some(code) = get_check_code(sum17) {
             if code == code18.to_uppercase() {
                 return true;
             }
@@ -402,6 +431,7 @@ fn validate_v2(number: &str) -> bool {
     false
 }
 
+/// Generates a new fake ID number.
 pub fn new_fake(
     region: &str,
     year: i32,
@@ -440,13 +470,14 @@ pub fn new_fake(
     };
 
     let weight = get_weights_sum(&iarr);
-    if let Some(code) = get_check_code_18(weight) {
+    if let Some(code) = get_check_code(weight) {
         Ok(seg17 + &code)
     } else {
         return Err(Error::GenerateFakeIDError("Invalid check code".to_string()));
     }
 }
 
+/// Options which can be used to configure how a fake ID number is generated.
 #[derive(Debug, PartialEq, PartialOrd)]
 pub struct FakeOptions {
     region: Option<String>,
@@ -456,7 +487,8 @@ pub struct FakeOptions {
 }
 
 impl FakeOptions {
-    pub fn default() -> FakeOptions {
+    /// Returns default options.
+    pub fn default() -> Self {
         FakeOptions {
             region: None,
             min_year: None,
@@ -465,28 +497,34 @@ impl FakeOptions {
         }
     }
 
+    /// Sets the minimum year(min_year <= max_year <= current).
     pub fn set_min_year(&mut self, year: i32) {
         self.min_year = Some(year);
     }
 
+    /// Sets the maximum year(min_year <= max_year <= current).
     pub fn set_max_year(&mut self, year: i32) {
         self.max_year = Some(year);
     }
 
+    /// Sets the region code, the length must be 2..6.
     pub fn set_region(&mut self, code: &str) {
         self.region = Some(code.to_owned());
     }
 
+    /// Sets the gender.
     pub fn set_gender(&mut self, gender: Gender) {
         self.gender = Some(gender);
     }
 }
 
+/// Generates a random fake ID number.
 pub fn rand_fake() -> Result<String, Error> {
     let option = FakeOptions::default();
     rand_fake_with_opts(&option)
 }
 
+/// Generates a random fake ID number using the given options.
 pub fn rand_fake_with_opts(opts: &FakeOptions) -> Result<String, Error> {
     let region_code = if let Some(reg) = &opts.region {
         match region::rand_code_starts_with(&reg) {
@@ -582,7 +620,7 @@ fn is_digital(s: &str) -> bool {
     }
 }
 
-fn get_check_code_18(sum: u32) -> Option<String> {
+fn get_check_code(sum: u32) -> Option<String> {
     let code = match sum % 11 {
         10 => "2",
         9 => "3",

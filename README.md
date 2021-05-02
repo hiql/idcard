@@ -1,4 +1,4 @@
-# Identity Card Utilities
+# Chinese Identity Card Utilities
 
 身份证号码解析校验工具
 
@@ -13,7 +13,7 @@
 
 ## API
 
-### 号码信息解析
+### 号码信息
 
 ```rust
 
@@ -23,46 +23,32 @@ let id = Identity::new("632123820927051");
 
 // 18位号码
 id.number();
-
 // 性别
 id.gender(); 
-
-// 当前年龄 
+// 计算年龄 
 id.age(); 
-
 // 出生年份
 id.year(); 
-
 // 出生月份
 id.month();
-
 // 出生日期 
 id.date(); 
-
 // 出生年月日（格式：yyyy-mm-dd)
 id.birth_date(); 
-
 // 天干地支
 id.chinese_era(); 
-
 // 生肖
 id.chinese_zodiac(); 
-
 // 星座
 id.constellation(); 
-
 // 省份
 id.province(); 
-
 // 号码归属地
 id.region(); 
-
-// 号码是否有效
+// 判断号码是否有效
 id.is_valid();
-
-// 号码是否为空
+// 判断号码是否为空
 id.is_empty();
-
 // 号码长度
 id.len(); 
 
@@ -72,18 +58,20 @@ id.len();
 
 ```rust
 
+use idcard::{hk, mo, tw};
+
 // 香港身份证校验
-idcard::hk::validate("G123456(A)");
+hk::validate("G123456(A)");
 
 // 澳门身份证校验
-idcard::mo::validate("1123456(0)");
+mo::validate("1123456(0)");
 
 // 台湾身份证校验
-idcard::tw::validate("A123456789");
+tw::validate("A123456789");
 
 ```
 
-### 号码归属地查询
+### 号码归属地
 
 ```rust
 
@@ -113,7 +101,7 @@ idcard::rand_fake();
 // 根据参数随机生成假身份证号码
 let mut opts = FakeOptions::default();
 opts.set_region("3301");
-//opts.set_gender(Gender::Female);
+opts.set_gender(Gender::Female);
 opts.set_min_year(1990);
 opts.set_max_year(2000);
 idcard::rand_fake_with_opts(&opts);

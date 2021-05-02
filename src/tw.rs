@@ -1,3 +1,5 @@
+//! Utilities for Taiwan Identity Card
+
 use regex::Regex;
 use std::collections::HashMap;
 
@@ -35,6 +37,7 @@ lazy_static! {
     static ref PATTERN: Regex = Regex::new(r"^[a-zA-Z][0-9]{9}$").unwrap();
 }
 
+/// Validates the number.
 pub fn validate(number: &str) -> bool {
     let number = number.trim().to_ascii_uppercase();
     if number.len() == 10 && PATTERN.is_match(&number) {
@@ -42,15 +45,19 @@ pub fn validate(number: &str) -> bool {
         let sex = &number[1..2];
         let mid = &number[1..9];
         let end = &number[9..10];
+
         if sex != "1" && sex != "2" {
             return false;
         }
+
         let start = match PREFIX_LETTERS.get(start) {
             Some(value) => value,
             _ => return false,
         };
+
         let mut sum = start / 10 + (start % 10) * 9;
         let mut flag = 8;
+
         for ch in mid.chars() {
             let i = match ch.to_digit(10) {
                 Some(value) => value,
@@ -59,7 +66,8 @@ pub fn validate(number: &str) -> bool {
             sum = sum + i * flag;
             flag -= 1;
         }
-        let end = match end.chars().next() {
+
+        let end = match end.chars().nth(0) {
             Some(ch) => match ch.to_digit(10) {
                 Some(value) => value,
                 _ => return false,

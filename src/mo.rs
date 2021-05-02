@@ -1,3 +1,5 @@
+//! Utilities for Macau Identity Card
+
 use regex::Regex;
 
 lazy_static! {
@@ -5,9 +7,12 @@ lazy_static! {
     static ref REMOVAL_PATTERN: Regex = Regex::new(r"[\(|\)]").unwrap();
 }
 
+/// Validates the number.
 pub fn validate(number: &str) -> bool {
-    let number = REMOVAL_PATTERN.replace_all(number, "");
-    let number = number.trim().to_ascii_uppercase();
+    let number = REMOVAL_PATTERN
+        .replace_all(number, "")
+        .trim()
+        .to_ascii_uppercase();
     if number.len() == 8 && PATTERN.is_match(&number) {
         true
     } else {

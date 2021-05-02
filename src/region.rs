@@ -1,3 +1,5 @@
+//! Region query utilities(only includes mainland)
+
 use std::collections::HashMap;
 use rand::{thread_rng, Rng};
 
@@ -6352,6 +6354,7 @@ fn init_code_vec() -> Vec<&'static str> {
     v
 }
 
+/// Returns the region name that matches the given code.
 pub fn query(code: &str) -> Option<String> {
     if code.len() != 6 {
         return None;
@@ -6362,12 +6365,14 @@ pub fn query(code: &str) -> Option<String> {
     }
 }
 
+/// Returns a random region code.
 pub fn rand_code() -> String {
     let mut rng = thread_rng();
     let i = rng.gen_range(0..CODES.len());
     CODES[i].to_string()
 }
 
+/// Returns a random region code that matches the given prefix.
 pub fn rand_code_starts_with(s: &str) -> Option<String> {
     if s.is_empty() {
         return None;

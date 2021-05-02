@@ -1,3 +1,5 @@
+//! Utilities for Hong Kong Identity Card
+
 use regex::Regex;
 use std::collections::HashMap;
 
@@ -20,29 +22,32 @@ lazy_static! {
     static ref REMOVAL_PATTERN: Regex = Regex::new(r"[\(|\)]").unwrap();
 }
 
+/// Validates the number.
 pub fn validate(number: &str) -> bool {
     if !PATTERN.is_match(number) {
         return false;
     }
 
-    let number = REMOVAL_PATTERN.replace_all(number, "");
-    let number = number.trim().to_ascii_uppercase();
+    let number = REMOVAL_PATTERN
+        .replace_all(number, "")
+        .trim()
+        .to_ascii_uppercase();
 
     let mut sum: u32;
     let mut card = &number[..];
     if number.len() == 9 {
-        let first = match number[0..1].chars().next() {
+        let first = match number.chars().nth(0) {
             Some(ch) => ch as u32,
             _ => return false,
         };
-        let second = match number[1..2].chars().next() {
+        let second = match number.chars().nth(1) {
             Some(ch) => ch as u32,
             _ => return false,
         };
         sum = (first - 55) * 9 + (second - 55) * 8;
         card = &number[1..9];
     } else {
-        let first = match number[0..1].chars().next() {
+        let first = match number.chars().nth(0) {
             Some(ch) => ch as u32,
             _ => return false,
         };
@@ -66,7 +71,7 @@ pub fn validate(number: &str) -> bool {
     if end == "A" {
         sum = sum + 10;
     } else {
-        let i = match end.chars().next() {
+        let i = match end.chars().nth(0) {
             Some(ch) => match ch.to_digit(10) {
                 Some(value) => value,
                 _ => return false,
