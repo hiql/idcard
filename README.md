@@ -13,14 +13,14 @@
 
 ## API
 
-### 号码信息
-
 ```toml
 
 [dependencies]
 idcard = "0.1"
 
 ```
+
+### 号码信息
 
 ```rust
 
