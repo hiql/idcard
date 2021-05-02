@@ -4,34 +4,34 @@ use regex::Regex;
 use std::collections::HashMap;
 
 lazy_static! {
-    static ref PREFIX_LETTERS: HashMap<&'static str, u32> = {
+    static ref PREFIX_LETTERS: HashMap<&'static str, (u32, &'static str)> = {
         let mut map = HashMap::new();
-        map.insert("A", 10);
-        map.insert("B", 11);
-        map.insert("C", 12);
-        map.insert("D", 13);
-        map.insert("E", 14);
-        map.insert("F", 15);
-        map.insert("G", 16);
-        map.insert("H", 17);
-        map.insert("J", 18);
-        map.insert("K", 19);
-        map.insert("L", 20);
-        map.insert("M", 21);
-        map.insert("N", 22);
-        map.insert("P", 23);
-        map.insert("Q", 24);
-        map.insert("R", 25);
-        map.insert("S", 26);
-        map.insert("T", 27);
-        map.insert("U", 28);
-        map.insert("V", 29);
-        map.insert("X", 30);
-        map.insert("Y", 31);
-        map.insert("W", 32);
-        map.insert("Z", 33);
-        map.insert("I", 34);
-        map.insert("O", 35);
+        map.insert("A", (10,  "台北市"));
+        map.insert("B", (11,  "台中市"));
+        map.insert("C", (12,  "基隆市"));
+        map.insert("D", (13,  "台南市"));
+        map.insert("E", (14,  "高雄市"));
+        map.insert("F", (15,  "新北市"));
+        map.insert("G", (16,  "宜兰县"));
+        map.insert("H", (17,  "桃园市"));
+        map.insert("J", (18,  "新竹县"));
+        map.insert("K", (19,  "苗栗县"));
+        map.insert("L", (20,  "台中县")); // obsoleted
+        map.insert("M", (21,  "南投县"));
+        map.insert("N", (22,  "彰化县"));
+        map.insert("P", (23,  "云林县"));
+        map.insert("Q", (24,  "嘉义县"));
+        map.insert("R", (25,  "台南县")); // obsoleted
+        map.insert("S", (26,  "高雄县")); // obsoleted
+        map.insert("T", (27,  "屏东县"));
+        map.insert("U", (28,  "花莲县"));
+        map.insert("V", (29,  "台东县"));
+        map.insert("X", (30,  "澎湖县"));
+        map.insert("Y", (31,  "阳明山管理局")); // obsoleted
+        map.insert("W", (32,  "金门县"));
+        map.insert("Z", (33,  "连江县"));
+        map.insert("I", (34,  "嘉义市"));
+        map.insert("O", (35,  "新竹市"));
         map
     };
     static ref PATTERN: Regex = Regex::new(r"^[a-zA-Z][0-9]{9}$").unwrap();
@@ -55,7 +55,7 @@ pub fn validate(number: &str) -> bool {
             _ => return false,
         };
 
-        let mut sum = start / 10 + (start % 10) * 9;
+        let mut sum = start.0 / 10 + (start.0 % 10) * 9;
         let mut flag = 8;
 
         for ch in mid.chars() {
@@ -81,6 +81,43 @@ pub fn validate(number: &str) -> bool {
     }
 }
 
+/// Returns the gender.
+pub fn gender(number: &str) -> Option<super::Gender> {
+    if !validate(number) {
+        return None;
+    }
+
+    if let Some(sex) = number.chars().nth(1) {
+        if sex == '1' {
+            Some(super::Gender::Male)
+        } else if sex == '2' {
+            Some(super::Gender::Female)
+        } else {
+            None
+        }
+    } else {
+        None
+    }
+}
+
+/// Returns the place by the initial letter
+pub fn region(number: &str) -> Option<String> {
+    if !validate(number) {
+        return None;
+    }
+
+    let code = &number[0..1];
+    if !code.is_empty() {
+        if let Some((_, name)) = PREFIX_LETTERS.get(code) {
+            Some(name.to_string())
+        } else {
+            None
+        }
+    } else {
+        None
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -91,5 +128,22 @@ mod tests {
         assert_eq!(validate("B142610160"), true);
         assert_eq!(validate("Q155304682"), true);
         assert_eq!(validate("Q155304680"), false);
+    }
+
+    #[test]
+    fn extract_info() {
+        let place = region("B142610160");
+        assert_eq!(place, Some("台中市".to_string()));
+        let place = region("0142610160");
+        assert_eq!(place, None);
+        let place = region("Q155304680");
+        assert_eq!(place, None);
+
+        let sex = gender("Q155304682");
+        assert_eq!(sex, Some(super::super::Gender::Male));
+        let sex = gender("A225376624");
+        assert_eq!(sex, Some(super::super::Gender::Female));
+        let sex = gender("Q155304680");
+        assert_eq!(sex, None);
     }
 }
