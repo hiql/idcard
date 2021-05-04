@@ -1,8 +1,8 @@
 # Chinese Identity Card Utilities
 
-身份证号码解析校验工具
+中国身份证号码解析校验工具
 
-## 功能特点
+## 特点
 
 - 15位升18位
 - 号码有效性校验
@@ -11,19 +11,21 @@
 - 支持港澳台身份证号码校验
 - 生成18位身份证号码
 
-## API
+## 用法
+
+Cargo.toml中添加依赖：
 
 ```toml
-
 [dependencies]
 idcard = "0.1"
 
 ```
 
+## 例子
+
 ### 号码信息
 
 ```rust
-
 use idcard::Identity;
 
 let id = Identity::new("632123820927051");
@@ -31,9 +33,10 @@ let id = Identity::new("632123820927051");
 // 18位号码
 id.number();
 // 性别
-id.gender(); 
-// 计算年龄 
+id.gender();
+// 当前年龄 
 id.age(); 
+// 计算相对年龄 
 id.age_in_year(2020); 
 // 出生年份
 id.year(); 
@@ -65,7 +68,6 @@ id.len();
 ### 港澳台身份证
 
 ```rust
-
 use idcard::{hk, mo, tw};
 
 // 香港身份证校验
@@ -85,7 +87,6 @@ tw::region("A123456789");
 ### 号码归属地
 
 ```rust
-
 use idcard::region;
 
 // 查询归属地名称
@@ -93,10 +94,9 @@ region::query("632123");
 
 ```
 
-### 全局方法
+### 实用方法
 
 ```rust
-
 // 15位升18位
 idcard::upgrade("632123820927051");
 
