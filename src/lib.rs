@@ -190,7 +190,8 @@ impl Identity {
         }
     }
 
-    /// Calculates the age based on the computer's local date
+    /// Calculates the current age based on the computer's local date,
+    /// if the birth year is less than the local's, it returns `None`.
     pub fn age(&self) -> Option<u32> {
         if !self.is_valid() {
             return None;
@@ -198,7 +199,27 @@ impl Identity {
 
         if let Ok(year) = self.number[6..10].parse::<u32>() {
             let current = Local::now().year() as u32;
+            if current < year {
+                return None;
+            }
             Some(current - year)
+        } else {
+            None
+        }
+    }
+
+    /// Calculates the age based on the given year, if the given year is less
+    /// than the birth year, it returns `None`.
+    pub fn age_in_year(&self, year: u32) -> Option<u32> {
+        if !self.is_valid() {
+            return None;
+        }
+
+        if let Ok(value) = self.number[6..10].parse::<u32>() {
+            if year < value {
+                return None;
+            }
+            Some(year - value)
         } else {
             None
         }
@@ -258,34 +279,7 @@ impl Identity {
             None => return None,
         };
 
-        let result = if (month == 1 && day >= 20) || (month == 2 && day <= 18) {
-            "水瓶座"
-        } else if (month == 2 && day >= 19) || (month == 3 && day <= 20) {
-            "双鱼座"
-        } else if (month == 3 && day > 20) || (month == 4 && day <= 19) {
-            "白羊座"
-        } else if (month == 4 && day >= 20) || (month == 5 && day <= 20) {
-            "金牛座"
-        } else if (month == 5 && day >= 21) || (month == 6 && day <= 21) {
-            "双子座"
-        } else if (month == 6 && day > 21) || (month == 7 && day <= 22) {
-            "巨蟹座"
-        } else if (month == 7 && day > 22) || (month == 8 && day <= 22) {
-            "狮子座"
-        } else if (month == 8 && day >= 23) || (month == 9 && day <= 22) {
-            "处女座"
-        } else if (month == 9 && day >= 23) || (month == 10 && day <= 23) {
-            "天秤座"
-        } else if (month == 10 && day > 23) || (month == 11 && day <= 22) {
-            "天蝎座"
-        } else if (month == 11 && day > 22) || (month == 12 && day <= 21) {
-            "射手座"
-        } else if (month == 12 && day > 21) || (month == 1 && day <= 19) {
-            "魔羯座"
-        } else {
-            return None;
-        };
-        Some(result.to_owned())
+        constellation(month as u32, day as u32)
     }
 
     /// Returns the Chinese Era by the year of birth.
@@ -299,13 +293,7 @@ impl Identity {
             None => return None,
         };
 
-        let i = (year - 3) % 10;
-        let j = (year - 3) % 12;
-        let era = format!(
-            "{}{}",
-            CELESTIAL_STEM[i as usize], TERRESTRIAL_BRANCH[j as usize]
-        );
-        Some(era)
+        chinese_era(year as u32)
     }
 
     /// Returns the Chinese Zodiac animal by the year of birth.
@@ -319,10 +307,7 @@ impl Identity {
             None => return None,
         };
 
-        let end = 3;
-        let idx = (year - end) % 12;
-        let zod = CHINESE_ZODIAC[idx as usize];
-        Some(zod.to_owned())
+        chinese_zodiac(year as u32)
     }
 
     /// Checks if the number is valid.
@@ -339,6 +324,65 @@ impl Identity {
     pub fn len(&self) -> usize {
         self.number.len()
     }
+}
+
+/// Returns the Chinese Zodiac animal by the given year, the given year
+/// should not be less than 1000.
+pub fn chinese_zodiac(year: u32) -> Option<String> {
+    if year < 1000 {
+        return None;
+    }
+    let end = 3;
+    let idx = (year - end) % 12;
+    let zod = CHINESE_ZODIAC[idx as usize];
+    Some(zod.to_owned())
+}
+
+/// Returns the Chinese Era by the given year, the given year
+/// should not be less than 1000.
+pub fn chinese_era(year: u32) -> Option<String> {
+    if year < 1000 {
+        return None;
+    }
+    let i = (year - 3) % 10;
+    let j = (year - 3) % 12;
+    let era = format!(
+        "{}{}",
+        CELESTIAL_STEM[i as usize], TERRESTRIAL_BRANCH[j as usize]
+    );
+    Some(era)
+}
+
+/// Returns the constellation by the given month and day.
+pub fn constellation(month: u32, day: u32) -> Option<String> {
+    let result = if (month == 1 && day >= 20) || (month == 2 && day <= 18) {
+        "水瓶座"
+    } else if (month == 2 && day >= 19) || (month == 3 && day <= 20) {
+        "双鱼座"
+    } else if (month == 3 && day > 20) || (month == 4 && day <= 19) {
+        "白羊座"
+    } else if (month == 4 && day >= 20) || (month == 5 && day <= 20) {
+        "金牛座"
+    } else if (month == 5 && day >= 21) || (month == 6 && day <= 21) {
+        "双子座"
+    } else if (month == 6 && day > 21) || (month == 7 && day <= 22) {
+        "巨蟹座"
+    } else if (month == 7 && day > 22) || (month == 8 && day <= 22) {
+        "狮子座"
+    } else if (month == 8 && day >= 23) || (month == 9 && day <= 22) {
+        "处女座"
+    } else if (month == 9 && day >= 23) || (month == 10 && day <= 23) {
+        "天秤座"
+    } else if (month == 10 && day > 23) || (month == 11 && day <= 22) {
+        "天蝎座"
+    } else if (month == 11 && day > 22) || (month == 12 && day <= 21) {
+        "射手座"
+    } else if (month == 12 && day > 21) || (month == 1 && day <= 19) {
+        "魔羯座"
+    } else {
+        return None;
+    };
+    Some(result.to_owned())
 }
 
 /// Upgrades a Chinese ID number from 15-digit to 18-digit.
@@ -688,6 +732,30 @@ mod tests {
     fn show_details() {
         let id = Identity::new("511702800222130");
         print_details(&id);
+    }
+
+    #[test]
+    fn calc_age() {
+        let id = Identity::new("511702800222130");
+        assert_eq!(id.age(), Some(41));
+        assert_eq!(id.age_in_year(2020), Some(40));
+        assert_eq!(id.age_in_year(1980), Some(0));
+        assert_eq!(id.age_in_year(1900), None);
+    }
+
+    #[test]
+    fn test_some_utilities() {
+        assert_eq!(chinese_zodiac(1000), Some("鼠".to_string()));
+        assert_eq!(chinese_zodiac(1900), Some("鼠".to_string()));
+        assert_eq!(chinese_zodiac(2021), Some("牛".to_string()));
+
+        assert_eq!(chinese_era(1000), Some("庚子".to_string()));
+        assert_eq!(chinese_era(1900), Some("庚子".to_string()));
+        assert_eq!(chinese_era(2021), Some("辛丑".to_string()));
+
+        assert_eq!(constellation(10, 25), Some("天蝎座".to_string()));
+        assert_eq!(constellation(2, 29), Some("双鱼座".to_string()));
+        assert_eq!(constellation(0, 32), None);
     }
 
     #[test]

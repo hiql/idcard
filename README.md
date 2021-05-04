@@ -34,6 +34,7 @@ id.number();
 id.gender(); 
 // 计算年龄 
 id.age(); 
+id.age_in_year(2020); 
 // 出生年份
 id.year(); 
 // 出生月份
@@ -115,6 +116,15 @@ opts.set_gender(Gender::Female);
 opts.set_min_year(1990);
 opts.set_max_year(2000);
 idcard::rand_fake_with_opts(&opts);
+
+// 返回年份对应的生肖
+idcard::chinese_zodiac(2021);
+
+// 返回年份对应的天干地支
+idcard::chinese_era(2021);
+
+// 返回月日对应的星座
+idcard::constellation(2, 29);
 
 ```
 
