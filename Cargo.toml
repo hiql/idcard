@@ -5,7 +5,7 @@ authors = ["hiql <qiu_lin@163.com>"]
 edition = "2018"
 license = "MIT"
 readme = "README.md"
-description = "Chinese Identify Card Utilities."
+description = "Chinese Identity Card Utilities."
 documentation = "https://docs.rs/idcard"
 repository = "https://github.com/hiql/idcard"
 
