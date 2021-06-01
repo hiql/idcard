@@ -6343,37 +6343,29 @@ lazy_static! {
         map.insert("820000", "澳门特别行政区");
         map
     };
-    static ref CODES:Vec<&'static str> = init_code_vec();
-}
-
-fn init_code_vec() -> Vec<&'static str> {
-    let mut v: Vec<&'static str> = Vec::new();
-    for k in REGION_CODE.keys() {
-        v.push(k);
-    } 
-    v
+    static ref CODES:Vec<&'static str> = REGION_CODE.keys().map(|k| *k).collect();
 }
 
 /// Returns the region name that matches the given code.
-pub fn query(code: &str) -> Option<String> {
+pub fn query(code: &str) -> Option<&str> {
     if code.len() != 6 {
         return None;
     }
     match REGION_CODE.get(code) {
-        Some(name) => Some(name.to_string()),
+        Some(name) => Some(*name),
         None => None
     }
 }
 
 /// Returns a random region code.
-pub fn rand_code() -> String {
+pub fn rand_code() -> &'static str {
     let mut rng = thread_rng();
     let i = rng.gen_range(0..CODES.len());
-    CODES[i].to_string()
+    CODES[i]
 }
 
 /// Returns a random region code that matches the given prefix.
-pub fn rand_code_starts_with(s: &str) -> Option<String> {
+pub fn rand_code_starts_with(s: &str) -> Option<&str> {
     if s.is_empty() {
         return None;
     }
@@ -6383,7 +6375,7 @@ pub fn rand_code_starts_with(s: &str) -> Option<String> {
     }
     let mut rng = thread_rng();
     let i = rng.gen_range(0..v.len());
-    Some(v[i].to_string())
+    Some(v[i])
 }
 
 #[cfg(test)]
@@ -6404,6 +6396,7 @@ mod tests {
 
     #[test]
     fn query_by_code() {
-        assert_eq!(query("640000"), Some("宁夏回族自治区".to_string()));
+        assert_eq!(query("640000"), Some("宁夏回族自治区"));
+        assert_eq!(query("620000"), Some("甘肃省"));
     }
 }

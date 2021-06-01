@@ -1,5 +1,6 @@
 //! Utilities for Taiwan Identity Card
 
+use crate::Gender;
 use regex::Regex;
 use std::collections::HashMap;
 
@@ -44,7 +45,7 @@ pub fn validate(number: &str) -> bool {
         let start = &number[0..1];
         let sex = &number[1..2];
         let mid = &number[1..9];
-        let end = &number[9..10];
+        let end = &number[9..];
 
         if sex != "1" && sex != "2" {
             return false;
@@ -82,16 +83,16 @@ pub fn validate(number: &str) -> bool {
 }
 
 /// Returns the gender.
-pub fn gender(number: &str) -> Option<super::Gender> {
+pub fn gender(number: &str) -> Option<Gender> {
     if !validate(number) {
         return None;
     }
 
     if let Some(sex) = number.chars().nth(1) {
         if sex == '1' {
-            Some(super::Gender::Male)
+            Some(Gender::Male)
         } else if sex == '2' {
-            Some(super::Gender::Female)
+            Some(Gender::Female)
         } else {
             None
         }
@@ -101,7 +102,7 @@ pub fn gender(number: &str) -> Option<super::Gender> {
 }
 
 /// Returns the place by the initial letter
-pub fn region(number: &str) -> Option<String> {
+pub fn region(number: &str) -> Option<&str> {
     if !validate(number) {
         return None;
     }
@@ -109,7 +110,7 @@ pub fn region(number: &str) -> Option<String> {
     let code = &number[0..1];
     if !code.is_empty() {
         if let Some((_, name)) = PREFIX_LETTERS.get(code) {
-            Some(name.to_string())
+            Some(*name)
         } else {
             None
         }
@@ -133,7 +134,7 @@ mod tests {
     #[test]
     fn extract_info() {
         let place = region("B142610160");
-        assert_eq!(place, Some("台中市".to_string()));
+        assert_eq!(place, Some("台中市"));
         let place = region("0142610160");
         assert_eq!(place, None);
         let place = region("Q155304680");

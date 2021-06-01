@@ -97,14 +97,14 @@ impl fmt::Display for Error {
 }
 
 /// The type of demographic genders
-#[derive(Debug, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Gender {
     Male,
     Female,
 }
 
 /// An object representation of the Chinese ID.
-#[derive(Debug, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Identity {
     number: String,
     valid: bool,
@@ -134,11 +134,11 @@ impl Identity {
     }
 
     /// Returns the ID number.
-    pub fn number(&self) -> String {
-        self.number.clone()
+    pub fn number(&self) -> &str {
+        &self.number
     }
 
-    /// Returns the date of birth(yyyy-mm-dd).
+    /// Returns the formatted date of birth(yyyy-mm-dd).
     pub fn birth_date(&self) -> Option<String> {
         if !self.is_valid() {
             return None;
@@ -243,20 +243,20 @@ impl Identity {
     }
 
     /// Returns the province name based on the first 2 digits of the number
-    pub fn province(&self) -> Option<String> {
+    pub fn province(&self) -> Option<&str> {
         if !self.is_valid() {
             return None;
         }
 
         let code = &self.number[0..2];
         match PROVINCE_CODE_NAME.get(code) {
-            Some(name) => Some(name.to_string()),
+            Some(name) => Some(*name),
             None => None,
         }
     }
 
     /// Returns the region name based on the first 6 digits of the number
-    pub fn region(&self) -> Option<String> {
+    pub fn region(&self) -> Option<&str> {
         if !self.is_valid() {
             return None;
         }
@@ -265,7 +265,7 @@ impl Identity {
     }
 
     /// Returns the constellation by the date of birth.
-    pub fn constellation(&self) -> Option<String> {
+    pub fn constellation(&self) -> Option<&str> {
         if !self.is_valid() {
             return None;
         }
@@ -283,7 +283,7 @@ impl Identity {
     }
 
     /// Returns the Chinese Era by the year of birth.
-    pub fn chinese_era(&self) -> Option<String> {
+    pub fn chinese_era(&self) -> Option<(&str, &str)> {
         if !self.is_valid() {
             return None;
         }
@@ -297,7 +297,7 @@ impl Identity {
     }
 
     /// Returns the Chinese Zodiac animal by the year of birth.
-    pub fn chinese_zodiac(&self) -> Option<String> {
+    pub fn chinese_zodiac(&self) -> Option<&str> {
         if !self.is_valid() {
             return None;
         }
@@ -328,33 +328,30 @@ impl Identity {
 
 /// Returns the Chinese Zodiac animal by the given year, the given year
 /// should not be less than 1000.
-pub fn chinese_zodiac(year: u32) -> Option<String> {
+pub fn chinese_zodiac(year: u32) -> Option<&'static str> {
     if year < 1000 {
         return None;
     }
     let end = 3;
     let idx = (year - end) % 12;
     let zod = CHINESE_ZODIAC[idx as usize];
-    Some(zod.to_owned())
+    Some(zod)
 }
 
 /// Returns the Chinese Era by the given year, the given year
 /// should not be less than 1000.
-pub fn chinese_era(year: u32) -> Option<String> {
+pub fn chinese_era(year: u32) -> Option<(&'static str, &'static str)> {
     if year < 1000 {
         return None;
     }
     let i = (year - 3) % 10;
     let j = (year - 3) % 12;
-    let era = format!(
-        "{}{}",
-        CELESTIAL_STEM[i as usize], TERRESTRIAL_BRANCH[j as usize]
-    );
+    let era = (CELESTIAL_STEM[i as usize], TERRESTRIAL_BRANCH[j as usize]);
     Some(era)
 }
 
 /// Returns the constellation by the given month and day.
-pub fn constellation(month: u32, day: u32) -> Option<String> {
+pub fn constellation(month: u32, day: u32) -> Option<&'static str> {
     let result = if (month == 1 && day >= 20) || (month == 2 && day <= 18) {
         "水瓶座"
     } else if (month == 2 && day >= 19) || (month == 3 && day <= 20) {
@@ -382,7 +379,7 @@ pub fn constellation(month: u32, day: u32) -> Option<String> {
     } else {
         return None;
     };
-    Some(result.to_owned())
+    Some(result)
 }
 
 /// Upgrades a Chinese ID number from 15-digit to 18-digit.
@@ -410,13 +407,13 @@ pub fn upgrade(number: &str) -> Result<String, Error> {
 
         let weight = get_weights_sum(&iarr);
         if let Some(code) = get_check_code(weight) {
-            idv2.push_str(&code);
+            idv2.push_str(code);
             Ok(idv2)
         } else {
             return Err(Error::UpgradeError);
         }
     } else {
-        Err(Error::UpgradeError)
+        Err(Error::InvalidNumber)
     }
 }
 
@@ -515,7 +512,7 @@ pub fn new_fake(
 
     let weight = get_weights_sum(&iarr);
     if let Some(code) = get_check_code(weight) {
-        Ok(seg17 + &code)
+        Ok(seg17 + code)
     } else {
         return Err(Error::GenerateFakeIDError("Invalid check code".to_string()));
     }
@@ -664,7 +661,7 @@ fn is_digital(s: &str) -> bool {
     }
 }
 
-fn get_check_code(sum: u32) -> Option<String> {
+fn get_check_code(sum: u32) -> Option<&'static str> {
     let code = match sum % 11 {
         10 => "2",
         9 => "3",
@@ -679,7 +676,7 @@ fn get_check_code(sum: u32) -> Option<String> {
         0 => "1",
         _ => return None,
     };
-    Some(code.to_string())
+    Some(code)
 }
 
 fn string_to_integer_array(s: &str) -> Result<Vec<u32>, Error> {
@@ -716,7 +713,7 @@ mod tests {
     fn upgrade_v1_to_v2() {
         let id = Identity::new("632123820927051");
         assert_eq!(id.is_valid(), true);
-        assert_eq!(id.number(), "632123198209270518".to_string());
+        assert_eq!(id.number(), "632123198209270518");
 
         let id = upgrade("310112850409522").unwrap();
         assert_eq!(&id, "310112198504095227");
@@ -745,23 +742,23 @@ mod tests {
 
     #[test]
     fn test_some_utilities() {
-        assert_eq!(chinese_zodiac(1000), Some("鼠".to_string()));
-        assert_eq!(chinese_zodiac(1900), Some("鼠".to_string()));
-        assert_eq!(chinese_zodiac(2021), Some("牛".to_string()));
+        assert_eq!(chinese_zodiac(1000), Some("鼠"));
+        assert_eq!(chinese_zodiac(1900), Some("鼠"));
+        assert_eq!(chinese_zodiac(2021), Some("牛"));
 
-        assert_eq!(chinese_era(1000), Some("庚子".to_string()));
-        assert_eq!(chinese_era(1900), Some("庚子".to_string()));
-        assert_eq!(chinese_era(2021), Some("辛丑".to_string()));
+        assert_eq!(chinese_era(1000), Some(("庚", "子")));
+        assert_eq!(chinese_era(1900), Some(("庚", "子")));
+        assert_eq!(chinese_era(2021), Some(("辛", "丑")));
 
-        assert_eq!(constellation(10, 25), Some("天蝎座".to_string()));
-        assert_eq!(constellation(2, 29), Some("双鱼座".to_string()));
+        assert_eq!(constellation(10, 25), Some("天蝎座"));
+        assert_eq!(constellation(2, 29), Some("双鱼座"));
         assert_eq!(constellation(0, 32), None);
     }
 
     #[test]
     fn query_region() {
         let name = region::query("511702").unwrap();
-        assert_eq!(&name, "四川省达州市通川区");
+        assert_eq!(name, "四川省达州市通川区");
     }
 
     #[test]
