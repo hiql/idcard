@@ -177,13 +177,13 @@ impl Identity {
     }
 
     /// Returns the day in the month of the birth.
-    pub fn date(&self) -> Option<i32> {
+    pub fn day(&self) -> Option<i32> {
         if !self.is_valid() {
             return None;
         }
 
-        if let Ok(date) = self.number[12..14].parse::<i32>() {
-            Some(date)
+        if let Ok(day) = self.number[12..14].parse::<i32>() {
+            Some(day)
         } else {
             None
         }
@@ -273,7 +273,7 @@ impl Identity {
             Some(value) => value,
             None => return None,
         };
-        let day = match self.date() {
+        let day = match self.day() {
             Some(value) => value,
             None => return None,
         };
@@ -282,7 +282,7 @@ impl Identity {
     }
 
     /// Returns the Chinese Era by the year of birth.
-    pub fn chinese_era(&self) -> Option<(&str, &str)> {
+    pub fn chinese_era(&self) -> Option<String> {
         if !self.is_valid() {
             return None;
         }
@@ -323,6 +323,53 @@ impl Identity {
     pub fn len(&self) -> usize {
         self.number.len()
     }
+
+    /// Converts the value to a JSON string.
+    pub fn to_json_string(&self, pretty: bool) -> String {
+        let indent = if pretty { "    " } else { " " };
+        let props = if self.is_valid() {
+            vec![
+                format!(r#"{}"number": {:?}"#, indent, self.number()),
+                format!(r#"{}"gender": "{:?}""#, indent, self.gender().unwrap()),
+                format!(r#"{}"birthDate": {:?}"#, indent, self.birth_date().unwrap()),
+                // format!(r#"{}"year": {:?}"#, indent, self.year().unwrap()),
+                // format!(r#"{}"month": {:?}"#, indent, self.month().unwrap()),
+                // format!(r#"{}"day": {:?}"#, indent, self.date().unwrap()),
+                format!(r#"{}"age": {:?}"#, indent, self.age().unwrap()),
+                format!(r#"{}"province": {:?}"#, indent, self.province().unwrap()),
+                format!(r#"{}"region": {:?}"#, indent, self.region().unwrap()),
+                format!(
+                    r#"{}"chineseEra": {:?}"#,
+                    indent,
+                    self.chinese_era().unwrap()
+                ),
+                format!(
+                    r#"{}"chineseZodiac": {:?}"#,
+                    indent,
+                    self.chinese_zodiac().unwrap()
+                ),
+                format!(
+                    r#"{}"constellation": {:?}"#,
+                    indent,
+                    self.constellation().unwrap()
+                ),
+                format!(r#"{}"isValid": {:?}"#, indent, self.is_valid()),
+            ]
+        } else {
+            vec![
+                format!(r#"{}"number": {:?}"#, indent, self.number()),
+                format!(r#"{}"isValid": {:?}"#, indent, self.is_valid()),
+            ]
+        };
+
+        if pretty {
+            let s = props.join(",\n");
+            format!("{{\n{}\n}}", s)
+        } else {
+            let s = props.join(",");
+            format!("{{{} }}", s)
+        }
+    }
 }
 
 /// Returns the Chinese Zodiac animal by the given year, the given year
@@ -339,13 +386,16 @@ pub fn chinese_zodiac(year: u32) -> Option<&'static str> {
 
 /// Returns the Chinese Era by the given year, the given year
 /// should not be less than 1000.
-pub fn chinese_era(year: u32) -> Option<(&'static str, &'static str)> {
+pub fn chinese_era(year: u32) -> Option<String> {
     if year < 1000 {
         return None;
     }
     let i = (year - 3) % 10;
     let j = (year - 3) % 12;
-    let era = (CELESTIAL_STEM[i as usize], TERRESTRIAL_BRANCH[j as usize]);
+    let era = format!(
+        "{}{}",
+        CELESTIAL_STEM[i as usize], TERRESTRIAL_BRANCH[j as usize]
+    );
     Some(era)
 }
 
@@ -546,7 +596,10 @@ mod tests {
     #[test]
     fn show_details() {
         let id = Identity::new("511702800222130");
-        print_details(&id);
+        println!("{}", id.to_json_string(true));
+
+        let id = Identity::new("51170280022213X");
+        println!("{}", id.to_json_string(true));
     }
 
     #[test]
@@ -564,9 +617,9 @@ mod tests {
         assert_eq!(chinese_zodiac(1900), Some("鼠"));
         assert_eq!(chinese_zodiac(2021), Some("牛"));
 
-        assert_eq!(chinese_era(1000), Some(("庚", "子")));
-        assert_eq!(chinese_era(1900), Some(("庚", "子")));
-        assert_eq!(chinese_era(2021), Some(("辛", "丑")));
+        assert_eq!(chinese_era(1000), Some("庚子".to_string()));
+        assert_eq!(chinese_era(1900), Some("庚子".to_string()));
+        assert_eq!(chinese_era(2021), Some("辛丑".to_string()));
 
         assert_eq!(constellation(10, 25), Some("天蝎座"));
         assert_eq!(constellation(2, 29), Some("双鱼座"));
@@ -592,26 +645,5 @@ mod tests {
         let a = Identity::new("330421197402080974");
         let b = Identity::new("130133197909136078");
         assert_eq!(a != b, true);
-    }
-
-    fn print_details(id: &Identity) {
-        let detail = vec![
-            format!("Number: {:?}", id.number()),
-            format!("Age: {:?}", id.age()),
-            format!("Year: {:?}", id.year()),
-            format!("Month: {:?}", id.month()),
-            format!("Date: {:?}", id.date()),
-            format!("BirthDate: {:?}", id.birth_date()),
-            format!("ChineseEra: {:?}", id.chinese_era()),
-            format!("ChineseZodiac: {:?}", id.chinese_zodiac()),
-            format!("Constellation: {:?}", id.constellation()),
-            format!("Gender: {:?}", id.gender()),
-            format!("Province: {:?}", id.province()),
-            format!("IsValid: {:?}", id.is_valid()),
-            format!("IsEmpty: {:?}", id.is_empty()),
-            format!("NumberLength: {:?}", id.len()),
-            format!("Region: {:?}", id.region()),
-        ];
-        println!("#--------- Summary ---------#\n{}\n", detail.join("\n"));
     }
 }

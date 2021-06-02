@@ -200,12 +200,12 @@ mod tests {
     fn generate_fake_id() {
         let f = new("654325", 2018, 2, 28, Gender::Male).unwrap();
         let id = Identity::new(&f);
-        print_details(&id);
+        println!("{}", id.to_json_string(true));
         assert_eq!(id.is_valid(), true);
 
         let f = new("310104", 2020, 2, 29, Gender::Female).unwrap();
         let id = Identity::new(&f);
-        print_details(&id);
+        println!("{}", id.to_json_string(true));
         assert_eq!(id.is_valid(), true);
 
         for i in 1..=10 {
@@ -243,26 +243,5 @@ mod tests {
             let num = rand_with_opts(&opts).unwrap();
             println!("{}: {:}", i, num);
         }
-    }
-
-    fn print_details(id: &Identity) {
-        let detail = vec![
-            format!("Number: {:?}", id.number()),
-            format!("Age: {:?}", id.age()),
-            format!("Year: {:?}", id.year()),
-            format!("Month: {:?}", id.month()),
-            format!("Date: {:?}", id.date()),
-            format!("BirthDate: {:?}", id.birth_date()),
-            format!("ChineseEra: {:?}", id.chinese_era()),
-            format!("ChineseZodiac: {:?}", id.chinese_zodiac()),
-            format!("Constellation: {:?}", id.constellation()),
-            format!("Gender: {:?}", id.gender()),
-            format!("Province: {:?}", id.province()),
-            format!("IsValid: {:?}", id.is_valid()),
-            format!("IsEmpty: {:?}", id.is_empty()),
-            format!("NumberLength: {:?}", id.len()),
-            format!("Region: {:?}", id.region()),
-        ];
-        println!("#--------- Summary ---------#\n{}\n", detail.join("\n"));
     }
 }
