@@ -8,12 +8,11 @@
 #[macro_use]
 extern crate lazy_static;
 
-use chrono::prelude::*;
-use chrono::{Datelike, Duration, Local, NaiveDate};
-use rand::{thread_rng, Rng};
+use chrono::{Datelike, Local, NaiveDate};
 use std::collections::HashMap;
 use std::fmt;
 
+pub mod fake;
 pub mod hk;
 pub mod mo;
 pub mod region;
@@ -472,187 +471,6 @@ fn validate_v2(number: &str) -> bool {
     false
 }
 
-/// Generates a new fake ID number.
-pub fn new_fake(
-    region: &str,
-    year: i32,
-    month: i32,
-    date: i32,
-    gender: Gender,
-) -> Result<String, Error> {
-    if region.len() != 6 {
-        return Err(Error::GenerateFakeIDError(
-            "The length of region code must be 6 digits".to_string(),
-        ));
-    }
-    let mut rng = thread_rng();
-    let mut seq = rng.gen_range(0..999);
-
-    if gender == Gender::Male && seq % 2 == 0 {
-        seq += 1;
-    }
-    if gender == Gender::Female && seq % 2 == 1 {
-        seq += 1;
-    }
-
-    let birthdate_str = format!("{}{:0>2}{:0>2}", year, month, date);
-    let birth_date = NaiveDate::parse_from_str(&birthdate_str, "%Y%m%d");
-    if birth_date.is_err() {
-        return Err(Error::GenerateFakeIDError(
-            "Invalid birth of date".to_string(),
-        ));
-    }
-
-    let seg17 = format!("{}{}{:0>3}", region, birthdate_str, seq);
-
-    let iarr = match string_to_integer_array(&seg17) {
-        Ok(value) => value,
-        _ => return Err(Error::GenerateFakeIDError("Invalid characters".to_string())),
-    };
-
-    let weight = get_weights_sum(&iarr);
-    if let Some(code) = get_check_code(weight) {
-        Ok(seg17 + code)
-    } else {
-        return Err(Error::GenerateFakeIDError("Invalid check code".to_string()));
-    }
-}
-
-/// Options which can be used to configure how a fake ID number is generated.
-#[derive(Debug, PartialEq, PartialOrd)]
-pub struct FakeOptions {
-    region: Option<String>,
-    min_year: Option<i32>,
-    max_year: Option<i32>,
-    gender: Option<Gender>,
-}
-
-impl FakeOptions {
-    /// Returns default options.
-    pub fn default() -> Self {
-        FakeOptions {
-            region: None,
-            min_year: None,
-            max_year: None,
-            gender: None,
-        }
-    }
-
-    /// Sets the minimum year(min_year <= max_year <= current).
-    pub fn set_min_year(&mut self, year: i32) {
-        self.min_year = Some(year);
-    }
-
-    /// Sets the maximum year(min_year <= max_year <= current).
-    pub fn set_max_year(&mut self, year: i32) {
-        self.max_year = Some(year);
-    }
-
-    /// Sets the region code, the length must be 2..6.
-    pub fn set_region(&mut self, code: &str) {
-        self.region = Some(code.to_owned());
-    }
-
-    /// Sets the gender.
-    pub fn set_gender(&mut self, gender: Gender) {
-        self.gender = Some(gender);
-    }
-}
-
-/// Generates a random fake ID number.
-pub fn rand_fake() -> Result<String, Error> {
-    let option = FakeOptions::default();
-    rand_fake_with_opts(&option)
-}
-
-/// Generates a random fake ID number using the given options.
-pub fn rand_fake_with_opts(opts: &FakeOptions) -> Result<String, Error> {
-    let region_code = if let Some(reg) = &opts.region {
-        match region::rand_code_starts_with(&reg) {
-            Some(code) => code,
-            _ => {
-                return Err(Error::GenerateFakeIDError(
-                    "Invalid region code".to_string(),
-                ))
-            }
-        }
-    } else {
-        region::rand_code()
-    };
-
-    let mut rng = thread_rng();
-    let now = Local::now();
-
-    if let Some(value) = opts.max_year {
-        if value > now.year() {
-            return Err(Error::GenerateFakeIDError(format!(
-                "Max year must be less than or equal to {}",
-                now.year()
-            )));
-        }
-    }
-
-    if let Some(value) = opts.min_year {
-        if value > now.year() {
-            return Err(Error::GenerateFakeIDError(format!(
-                "Min year must be less than or equal to {}",
-                now.year()
-            )));
-        }
-    }
-
-    if opts.min_year.is_some() && opts.max_year.is_some() {
-        let min = opts.min_year.unwrap();
-        let max = opts.max_year.unwrap();
-        if max < min {
-            return Err(Error::GenerateFakeIDError(
-                "Max year must be greater than or equal to min year".to_string(),
-            ));
-        }
-    }
-
-    let min_age = if let Some(y) = opts.max_year {
-        now.year() - y
-    } else {
-        0
-    };
-    let max_age = if let Some(y) = opts.min_year {
-        now.year() - y
-    } else {
-        100
-    };
-
-    let age = if max_age == min_age {
-        max_age
-    } else {
-        rng.gen_range(min_age..=max_age)
-    };
-
-    let days = rng.gen_range(1..365);
-    let dt = Local.ymd(now.year(), 1, 1);
-    let birth = dt - Duration::days((age * 365 - days) as i64);
-    let gender = if let Some(value) = &opts.gender {
-        match value {
-            Gender::Male => Gender::Male,
-            Gender::Female => Gender::Female,
-        }
-    } else {
-        let flag = rng.gen_range(0..10);
-        if flag % 2 == 0 {
-            Gender::Male
-        } else {
-            Gender::Female
-        }
-    };
-    new_fake(
-        &region_code,
-        birth.year(),
-        birth.month() as i32,
-        birth.day() as i32,
-        gender,
-    )
-}
-
 fn is_digital(s: &str) -> bool {
     if s.is_empty() {
         false
@@ -774,51 +592,6 @@ mod tests {
         let a = Identity::new("330421197402080974");
         let b = Identity::new("130133197909136078");
         assert_eq!(a != b, true);
-    }
-
-    #[test]
-    fn generate_fake_id() {
-        let f = new_fake("654325", 2018, 2, 28, Gender::Male).unwrap();
-        let id = Identity::new(&f);
-        print_details(&id);
-        assert_eq!(id.is_valid(), true);
-
-        let f = new_fake("310104", 2020, 2, 29, Gender::Female).unwrap();
-        let id = Identity::new(&f);
-        print_details(&id);
-        assert_eq!(id.is_valid(), true);
-
-        for i in 1..=10 {
-            let num = rand_fake().unwrap();
-            println!("{}: {}", i, num);
-        }
-
-        let f = new_fake("2300", 1970, 2, 28, Gender::Male);
-        assert_eq!(f.is_err(), true);
-
-        let f = new_fake("230000", 1970, 2, 29, Gender::Male);
-        assert_eq!(f.is_err(), true);
-    }
-
-    #[test]
-    fn generate_fake_id_with_options() {
-        let mut opts = FakeOptions::default();
-        opts.set_region("3301");
-        opts.set_gender(Gender::Female);
-        opts.set_min_year(1990);
-        opts.set_max_year(2000);
-
-        for i in 1..=5 {
-            let num = rand_fake_with_opts(&opts).unwrap();
-            println!("{}: {:}", i, num);
-        }
-
-        opts.set_region("11");
-        opts.set_gender(Gender::Male);
-        for i in 1..=5 {
-            let num = rand_fake_with_opts(&opts).unwrap();
-            println!("{}: {:}", i, num);
-        }
     }
 
     fn print_details(id: &Identity) {
