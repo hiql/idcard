@@ -33,7 +33,7 @@ pub fn new(
     let birth_date = NaiveDate::parse_from_str(&birthdate_str, "%Y%m%d");
     if birth_date.is_err() {
         return Err(Error::GenerateFakeIDError(
-            "Invalid birth of date".to_string(),
+            "Invalid date of birth".to_string(),
         ));
     }
 
