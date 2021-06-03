@@ -263,6 +263,15 @@ impl Identity {
         region::query(&self.number[0..6])
     }
 
+    /// Returns the region code(the first 6 digits)
+    pub fn region_code(&self) -> Option<&str> {
+        if !self.is_valid() {
+            return None;
+        }
+
+        Some(&self.number[0..6])
+    }
+
     /// Returns the constellation by the date of birth.
     pub fn constellation(&self) -> Option<&str> {
         if !self.is_valid() {
@@ -326,39 +335,69 @@ impl Identity {
 
     /// Converts the value to a JSON string.
     pub fn to_json_string(&self, pretty: bool) -> String {
-        let indent = if pretty { "    " } else { " " };
+        let indent = if pretty { "    " } else { "" };
+        let space = if pretty { " " } else { "" };
         let props = if self.is_valid() {
             vec![
-                format!(r#"{}"number": {:?}"#, indent, self.number()),
-                format!(r#"{}"gender": "{:?}""#, indent, self.gender().unwrap()),
-                format!(r#"{}"birthDate": {:?}"#, indent, self.birth_date().unwrap()),
-                // format!(r#"{}"year": {:?}"#, indent, self.year().unwrap()),
-                // format!(r#"{}"month": {:?}"#, indent, self.month().unwrap()),
-                // format!(r#"{}"day": {:?}"#, indent, self.date().unwrap()),
-                format!(r#"{}"age": {:?}"#, indent, self.age().unwrap()),
-                format!(r#"{}"province": {:?}"#, indent, self.province().unwrap()),
-                format!(r#"{}"region": {:?}"#, indent, self.region().unwrap()),
+                format!(r#"{}"number":{}{:?}"#, indent, space, self.number()),
                 format!(
-                    r#"{}"chineseEra": {:?}"#,
+                    r#"{}"gender":{}"{:?}""#,
                     indent,
+                    space,
+                    self.gender().unwrap()
+                ),
+                format!(
+                    r#"{}"birthDate":{}{:?}"#,
+                    indent,
+                    space,
+                    self.birth_date().unwrap()
+                ),
+                format!(r#"{}"year":{}{:?}"#, indent, space, self.year().unwrap()),
+                format!(r#"{}"month":{}{:?}"#, indent, space, self.month().unwrap()),
+                format!(r#"{}"day":{}{:?}"#, indent, space, self.day().unwrap()),
+                format!(r#"{}"age":{}{:?}"#, indent, space, self.age().unwrap()),
+                format!(
+                    r#"{}"province":{}{:?}"#,
+                    indent,
+                    space,
+                    self.province().unwrap()
+                ),
+                format!(
+                    r#"{}"region":{}{:?}"#,
+                    indent,
+                    space,
+                    self.region().unwrap()
+                ),
+                format!(
+                    r#"{}"regionCode":{}{:?}"#,
+                    indent,
+                    space,
+                    self.region_code().unwrap()
+                ),
+                format!(
+                    r#"{}"chineseEra":{}{:?}"#,
+                    indent,
+                    space,
                     self.chinese_era().unwrap()
                 ),
                 format!(
-                    r#"{}"chineseZodiac": {:?}"#,
+                    r#"{}"chineseZodiac":{}{:?}"#,
                     indent,
+                    space,
                     self.chinese_zodiac().unwrap()
                 ),
                 format!(
-                    r#"{}"constellation": {:?}"#,
+                    r#"{}"constellation":{}{:?}"#,
                     indent,
+                    space,
                     self.constellation().unwrap()
                 ),
-                format!(r#"{}"isValid": {:?}"#, indent, self.is_valid()),
+                format!(r#"{}"isValid":{}{:?}"#, indent, space, self.is_valid()),
             ]
         } else {
             vec![
-                format!(r#"{}"number": {:?}"#, indent, self.number()),
-                format!(r#"{}"isValid": {:?}"#, indent, self.is_valid()),
+                format!(r#"{}"number":{}{:?}"#, indent, space, self.number()),
+                format!(r#"{}"isValid":{}{:?}"#, indent, space, self.is_valid()),
             ]
         };
 
@@ -367,7 +406,7 @@ impl Identity {
             format!("{{\n{}\n}}", s)
         } else {
             let s = props.join(",");
-            format!("{{{} }}", s)
+            format!("{{{}}}", s)
         }
     }
 }
@@ -599,7 +638,7 @@ mod tests {
         println!("{}", id.to_json_string(true));
 
         let id = Identity::new("51170280022213X");
-        println!("{}", id.to_json_string(true));
+        println!("{}", id.to_json_string(false));
     }
 
     #[test]

@@ -56,6 +56,8 @@ id.constellation();
 id.province(); 
 // 号码归属地
 id.region(); 
+// 归属地代码
+id.region(); 
 // 判断号码是否有效
 id.is_valid();
 // 判断号码是否为空
@@ -75,9 +77,13 @@ JSON字符串格式:
     "number": "511702198002221308",
     "gender": "Female",
     "birthDate": "1980-02-22",
+    "year": 1980,
+    "month": 2,
+    "day": 22,
     "age": 41,
     "province": "四川",
     "region": "四川省达州市通川区",
+    "regionCode": "511702",
     "chineseEra": "庚申",
     "chineseZodiac": "猴",
     "constellation": "双鱼座",
@@ -132,9 +138,9 @@ fake::rand();
 // 根据参数随机生成身份证号码
 let opts = fake::FakeOptions::new()
     .region("3301")
-    .gender(Gender::Female)
     .min_year(1990)
-    .max_year(2000);
+    .max_year(2000)
+    .gender(Gender::Female);
 fake::rand_with_opts(&opts);
 
 ```

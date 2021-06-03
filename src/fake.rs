@@ -53,7 +53,7 @@ pub fn new(
 }
 
 /// Options which can be used to configure how a fake ID number is generated.
-#[derive(Clone, Debug)]
+#[derive(Debug, Default, Clone)]
 pub struct FakeOptions {
     region: Option<String>,
     min_year: Option<i32>,
@@ -64,12 +64,7 @@ pub struct FakeOptions {
 impl FakeOptions {
     /// Creates a blank new set of options ready for configuration.
     pub fn new() -> Self {
-        FakeOptions {
-            region: None,
-            min_year: None,
-            max_year: None,
-            gender: None,
-        }
+        FakeOptions::default()
     }
 
     /// Sets the minimum year(min_year <= max_year <= current).
@@ -224,9 +219,9 @@ mod tests {
     fn generate_fake_id_with_options() {
         let opts = FakeOptions::new()
             .region("3301")
-            .gender(Gender::Female)
             .min_year(1990)
-            .max_year(2000);
+            .max_year(2000)
+            .gender(Gender::Female);
 
         for i in 1..=5 {
             let num = rand_with_opts(&opts).unwrap();
@@ -236,8 +231,8 @@ mod tests {
         let opts = opts
             .clone()
             .region("11")
-            .gender(Gender::Male)
-            .max_year(1990);
+            .max_year(1990)
+            .gender(Gender::Male);
 
         for i in 1..=5 {
             let num = rand_with_opts(&opts).unwrap();
