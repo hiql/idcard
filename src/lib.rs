@@ -4,6 +4,47 @@
 //! ID information, to upgrade ID number from 15-digit to 18-digit, to generate
 //! fake ID number, and some related functions for HongKong/Macau/Taiwan ID.
 //!
+//! # Examples
+//!
+//! ```
+//! use idcard::{Identity, fake, Gender};
+//!
+//! let id = Identity::new("632123820927051");
+//!
+//! // Determines whether the ID number is valid.
+//! assert_eq!(id.is_valid(), true);
+//!
+//! // Gets properties
+//! let number = id.number();
+//! let gender = id.gender();
+//! let age = id.age();
+//! let birth_date = id.birth_date();
+//! let region = id.region();
+//! // and so on...
+//!
+//! // Converts the value to a JSON string.
+//! println!("{}", id.to_json_string(true));
+//!
+//! // Upgrades an ID number from 15-digit to 18-digit.
+//! let id18 = idcard::upgrade("310112850409522").unwrap();
+//! assert_eq!(&id18, "310112198504095227");
+//!
+//! // Validates an ID number.
+//! assert_eq!(idcard::validate("230127197908177456"), true);
+//!
+//! // Generates a random fake ID number using the given options.
+//! let opts = fake::FakeOptions::new()
+//!     .region("3301")
+//!     .min_year(1990)
+//!     .max_year(2000)
+//!     .gender(Gender::Female);
+//! match fake::rand_with_opts(&opts); {
+//!     Ok(num) => println!("{}", num),
+//!     Err(e) => println!("{}", e),
+//! }
+//! ```
+//! For more information , please refer to the API docs.
+//!
 
 #[macro_use]
 extern crate lazy_static;
