@@ -57,7 +57,7 @@ id.province();
 // 号码归属地
 id.region(); 
 // 归属地代码
-id.region(); 
+id.region_code(); 
 // 判断号码是否有效
 id.is_valid();
 // 判断号码是否为空
