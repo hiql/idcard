@@ -38,12 +38,12 @@
 //!     .min_year(1990)
 //!     .max_year(2000)
 //!     .gender(Gender::Female);
-//! match fake::rand_with_opts(&opts); {
+//! match fake::rand_with_opts(&opts) {
 //!     Ok(num) => println!("{}", num),
 //!     Err(e) => println!("{}", e),
 //! }
 //! ```
-//! For more information , please refer to the API docs.
+//! For more information ,please read the API documentation.
 //!
 
 #[macro_use]
