@@ -63,7 +63,6 @@ pub fn validate(number: &str) -> bool {
             Some(value) => value,
             _ => return false,
         };
-
         sum = sum + i * flag;
         flag -= 1;
     }
@@ -78,7 +77,6 @@ pub fn validate(number: &str) -> bool {
             },
             _ => return false,
         };
-
         sum = sum + i;
     }
     sum % 11 == 0
@@ -89,7 +87,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn validate_hk() {
+    fn test_validate() {
         assert_eq!(validate("G123456(A)"), true);
         assert_eq!(validate("G123456(a)"), false);
         assert_eq!(validate("G123456A"), true);

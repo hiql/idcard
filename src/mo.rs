@@ -25,7 +25,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn validate_mo() {
+    fn test_validate() {
         assert_eq!(validate("1123456(A)"), true);
         assert_eq!(validate("7431243(3)"), true);
         assert_eq!(validate("5631279(0)"), true);

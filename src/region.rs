@@ -4,7 +4,7 @@ use rand::{thread_rng, Rng};
 use std::collections::HashMap;
 
 lazy_static! {
-    static ref REGION_CODE_MAP: HashMap<&'static str, &'static str> = {
+    static ref REGIONS: HashMap<&'static str, &'static str> = {
         let mut map = HashMap::new();
         map.insert("110000", "北京市");
         map.insert("110101", "北京市东城区");
@@ -3216,7 +3216,7 @@ lazy_static! {
         map.insert("820000", "澳门特别行政区");
         map
     };
-    static ref CODE_LIST: Vec<&'static str> = REGION_CODE_MAP.keys().map(|k| *k).collect();
+    static ref CODES: Vec<&'static str> = REGIONS.keys().map(|k| *k).collect();
 }
 
 /// Returns the region name that matches the given code.
@@ -3224,7 +3224,7 @@ pub fn query(code: &str) -> Option<&str> {
     if code.len() != 6 {
         return None;
     }
-    match REGION_CODE_MAP.get(code) {
+    match REGIONS.get(code) {
         Some(name) => Some(*name),
         None => None,
     }
@@ -3233,8 +3233,8 @@ pub fn query(code: &str) -> Option<&str> {
 /// Returns a random region code.
 pub fn rand_code() -> &'static str {
     let mut rng = thread_rng();
-    let i = rng.gen_range(0..CODE_LIST.len());
-    CODE_LIST[i]
+    let i = rng.gen_range(0..CODES.len());
+    CODES[i]
 }
 
 /// Returns a random region code that matches the given prefix.
@@ -3242,7 +3242,7 @@ pub fn rand_code_starts_with(prefix: &str) -> Option<&str> {
     if prefix.is_empty() {
         return None;
     }
-    let found = CODE_LIST
+    let found = CODES
         .iter()
         .filter(|x| x.starts_with(prefix))
         .collect::<Vec<_>>();

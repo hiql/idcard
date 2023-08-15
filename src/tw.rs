@@ -124,7 +124,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn validate_tw() {
+    fn test_validate() {
         assert_eq!(validate("A123456789"), true);
         assert_eq!(validate("B142610160"), true);
         assert_eq!(validate("Q155304682"), true);
@@ -132,19 +132,22 @@ mod tests {
     }
 
     #[test]
-    fn extract_info() {
-        let place = region("B142610160");
-        assert_eq!(place, Some("台中市"));
-        let place = region("0142610160");
-        assert_eq!(place, None);
-        let place = region("Q155304680");
-        assert_eq!(place, None);
+    fn test_get_region() {
+        let r = region("B142610160");
+        assert_eq!(r, Some("台中市"));
+        let r = region("0142610160");
+        assert_eq!(r, None);
+        let r = region("Q155304680");
+        assert_eq!(r, None);
+    }
 
-        let sex = gender("Q155304682");
-        assert_eq!(sex, Some(super::super::Gender::Male));
-        let sex = gender("A225376624");
-        assert_eq!(sex, Some(super::super::Gender::Female));
-        let sex = gender("Q155304680");
-        assert_eq!(sex, None);
+    #[test]
+    fn test_get_gender() {
+        let g = gender("Q155304682");
+        assert_eq!(g, Some(super::super::Gender::Male));
+        let g = gender("A225376624");
+        assert_eq!(g, Some(super::super::Gender::Female));
+        let g = gender("Q155304680");
+        assert_eq!(g, None);
     }
 }

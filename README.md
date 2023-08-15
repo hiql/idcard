@@ -4,16 +4,16 @@
 
 ## 特点
 
-- 号码15位升18位
+- 号码 15 位升 18 位
 - 号码有效性校验
 - 解析号码相关信息
 - 查询号码归属地信息
 - 支持港澳台身份证号码校验
-- 生成18位身份证号码
+- 生成 18 位身份证号码
 
 ## 用法
 
-Cargo.toml中添加依赖：
+Cargo.toml 中添加依赖：
 
 ```toml
 [dependencies]
@@ -34,66 +34,36 @@ let id = Identity::new("632123820927051");
 id.number();
 // 性别
 id.gender();
-// 当前年龄 
-id.age(); 
-// 计算相对年龄 
-id.age_in_year(2020); 
+// 当前年龄
+id.age();
+// 计算相对年龄
+id.age_in_year(2020);
 // 出生年份
-id.year(); 
+id.year();
 // 出生月份
 id.month();
 // 出生日
-id.day(); 
+id.day();
 // 出生年月日（格式：yyyy-mm-dd)
-id.birth_date(); 
+id.birth_date();
 // 天干地支
-id.chinese_era(); 
+id.chinese_era();
 // 生肖
-id.chinese_zodiac(); 
+id.chinese_zodiac();
 // 星座
-id.constellation(); 
+id.constellation();
 // 省份
-id.province(); 
+id.province();
 // 号码归属地
-id.region(); 
+id.region();
 // 归属地代码
-id.region_code(); 
+id.region_code();
 // 判断号码是否有效
 id.is_valid();
 // 判断号码是否为空
 id.is_empty();
 // 号码长度
-id.len(); 
-
-// 返回JSON格式字符串
-id.to_json_string(true);
-
-```
-
-JSON字符串格式:
-
-```json
-{
-    "number": "511702198002221308",
-    "gender": "Female",
-    "birthDate": "1980-02-22",
-    "year": 1980,
-    "month": 2,
-    "day": 22,
-    "age": 41,
-    "province": "四川",
-    "region": "四川省达州市通川区",
-    "regionCode": "511702",
-    "chineseEra": "庚申",
-    "chineseZodiac": "猴",
-    "constellation": "双鱼座",
-    "isValid": true
-}
-
-{
-    "number": "51170280022213X",
-    "isValid": false
-}
+id.len();
 
 ```
 
@@ -140,8 +110,8 @@ let opts = fake::FakeOptions::new()
     .region("3301")
     .min_year(1990)
     .max_year(2000)
-    .gender(Gender::Female);
-fake::rand_with_opts(&opts);
+    .female();
+fake::rand_with(&opts);
 
 ```
 
@@ -169,6 +139,6 @@ idcard::constellation(2, 29);
 
 部分算法代码参考于网络
 
-## License
+**归属地信息已更新至 2022 年**
 
-MIT
+License MIT

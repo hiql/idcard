@@ -8,6 +8,7 @@ readme = "README.md"
 description = "Chinese Identity Card Utilities."
 documentation = "https://docs.rs/idcard"
 repository = "https://github.com/hiql/idcard"
+keywords = ["idcard", "China", "identification", "number", "validation"]
 
 [dependencies]
 lazy_static = "1.4"

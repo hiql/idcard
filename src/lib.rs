@@ -22,9 +22,6 @@
 //! let region = id.region();
 //! // and so on...
 //!
-//! // Converts the value to a JSON string.
-//! println!("{}", id.to_json_string(true));
-//!
 //! // Upgrades an ID number from 15-digit to 18-digit.
 //! let id18 = idcard::upgrade("310112850409522").unwrap();
 //! assert_eq!(&id18, "310112198504095227");
@@ -37,8 +34,8 @@
 //!     .region("3301")
 //!     .min_year(1990)
 //!     .max_year(2000)
-//!     .gender(Gender::Female);
-//! match fake::rand_with_opts(&opts) {
+//!     .female();
+//! match fake::rand_with(&opts) {
 //!     Ok(num) => println!("{}", num),
 //!     Err(e) => println!("{}", e),
 //! }
@@ -183,7 +180,6 @@ impl Identity {
         if !self.is_valid() {
             return None;
         }
-
         let birth = &self.number[6..14];
         let year = &birth[0..4];
         let month = &birth[4..6];
@@ -192,12 +188,11 @@ impl Identity {
     }
 
     /// Returns the year of birth.
-    pub fn year(&self) -> Option<i32> {
+    pub fn year(&self) -> Option<u32> {
         if !self.is_valid() {
             return None;
         }
-
-        if let Ok(year) = self.number[6..10].parse::<i32>() {
+        if let Ok(year) = self.number[6..10].parse::<u32>() {
             Some(year)
         } else {
             None
@@ -205,12 +200,11 @@ impl Identity {
     }
 
     /// Returns the month of birth.
-    pub fn month(&self) -> Option<i32> {
+    pub fn month(&self) -> Option<u32> {
         if !self.is_valid() {
             return None;
         }
-
-        if let Ok(month) = self.number[10..12].parse::<i32>() {
+        if let Ok(month) = self.number[10..12].parse::<u32>() {
             Some(month)
         } else {
             None
@@ -218,12 +212,11 @@ impl Identity {
     }
 
     /// Returns the day in the month of the birth.
-    pub fn day(&self) -> Option<i32> {
+    pub fn day(&self) -> Option<u32> {
         if !self.is_valid() {
             return None;
         }
-
-        if let Ok(day) = self.number[12..14].parse::<i32>() {
+        if let Ok(day) = self.number[12..14].parse::<u32>() {
             Some(day)
         } else {
             None
@@ -236,7 +229,6 @@ impl Identity {
         if !self.is_valid() {
             return None;
         }
-
         if let Ok(year) = self.number[6..10].parse::<u32>() {
             let current = Local::now().year() as u32;
             if current < year {
@@ -254,7 +246,6 @@ impl Identity {
         if !self.is_valid() {
             return None;
         }
-
         if let Ok(value) = self.number[6..10].parse::<u32>() {
             if year < value {
                 return None;
@@ -270,8 +261,7 @@ impl Identity {
         if !self.is_valid() {
             return None;
         }
-
-        if let Ok(code) = self.number[16..17].parse::<i32>() {
+        if let Ok(code) = self.number[16..17].parse::<u32>() {
             if code % 2 != 0 {
                 Some(Gender::Male)
             } else {
@@ -287,7 +277,6 @@ impl Identity {
         if !self.is_valid() {
             return None;
         }
-
         let code = &self.number[0..2];
         match PROVINCE_CODE_NAME.get(code) {
             Some(name) => Some(*name),
@@ -300,7 +289,6 @@ impl Identity {
         if !self.is_valid() {
             return None;
         }
-
         region::query(&self.number[0..6])
     }
 
@@ -309,7 +297,6 @@ impl Identity {
         if !self.is_valid() {
             return None;
         }
-
         Some(&self.number[0..6])
     }
 
@@ -318,7 +305,6 @@ impl Identity {
         if !self.is_valid() {
             return None;
         }
-
         let month = match self.month() {
             Some(value) => value,
             None => return None,
@@ -327,8 +313,7 @@ impl Identity {
             Some(value) => value,
             None => return None,
         };
-
-        constellation(month as u32, day as u32)
+        constellation(month, day)
     }
 
     /// Returns the Chinese Era by the year of birth.
@@ -336,13 +321,11 @@ impl Identity {
         if !self.is_valid() {
             return None;
         }
-
         let year = match self.year() {
             Some(value) => value,
             None => return None,
         };
-
-        chinese_era(year as u32)
+        chinese_era(year)
     }
 
     /// Returns the Chinese Zodiac animal by the year of birth.
@@ -350,13 +333,11 @@ impl Identity {
         if !self.is_valid() {
             return None;
         }
-
         let year = match self.year() {
             Some(value) => value,
             None => return None,
         };
-
-        chinese_zodiac(year as u32)
+        chinese_zodiac(year)
     }
 
     /// Checks if the number is valid.
@@ -372,83 +353,6 @@ impl Identity {
     /// Returns the length of the number.
     pub fn len(&self) -> usize {
         self.number.len()
-    }
-
-    /// Converts the value to a JSON string.
-    pub fn to_json_string(&self, pretty: bool) -> String {
-        let indent = if pretty { "    " } else { "" };
-        let space = if pretty { " " } else { "" };
-        let props = if self.is_valid() {
-            vec![
-                format!(r#"{}"number":{}{:?}"#, indent, space, self.number()),
-                format!(
-                    r#"{}"gender":{}"{:?}""#,
-                    indent,
-                    space,
-                    self.gender().unwrap()
-                ),
-                format!(
-                    r#"{}"birthDate":{}{:?}"#,
-                    indent,
-                    space,
-                    self.birth_date().unwrap()
-                ),
-                format!(r#"{}"year":{}{:?}"#, indent, space, self.year().unwrap()),
-                format!(r#"{}"month":{}{:?}"#, indent, space, self.month().unwrap()),
-                format!(r#"{}"day":{}{:?}"#, indent, space, self.day().unwrap()),
-                format!(r#"{}"age":{}{:?}"#, indent, space, self.age().unwrap()),
-                format!(
-                    r#"{}"province":{}{:?}"#,
-                    indent,
-                    space,
-                    self.province().unwrap()
-                ),
-                format!(
-                    r#"{}"region":{}{:?}"#,
-                    indent,
-                    space,
-                    self.region().unwrap()
-                ),
-                format!(
-                    r#"{}"regionCode":{}{:?}"#,
-                    indent,
-                    space,
-                    self.region_code().unwrap()
-                ),
-                format!(
-                    r#"{}"chineseEra":{}{:?}"#,
-                    indent,
-                    space,
-                    self.chinese_era().unwrap()
-                ),
-                format!(
-                    r#"{}"chineseZodiac":{}{:?}"#,
-                    indent,
-                    space,
-                    self.chinese_zodiac().unwrap()
-                ),
-                format!(
-                    r#"{}"constellation":{}{:?}"#,
-                    indent,
-                    space,
-                    self.constellation().unwrap()
-                ),
-                format!(r#"{}"isValid":{}{:?}"#, indent, space, self.is_valid()),
-            ]
-        } else {
-            vec![
-                format!(r#"{}"number":{}{:?}"#, indent, space, self.number()),
-                format!(r#"{}"isValid":{}{:?}"#, indent, space, self.is_valid()),
-            ]
-        };
-
-        if pretty {
-            let s = props.join(",\n");
-            format!("{{\n{}\n}}", s)
-        } else {
-            let s = props.join(",");
-            format!("{{{}}}", s)
-        }
     }
 }
 
@@ -516,7 +420,6 @@ pub fn upgrade(number: &str) -> Result<String, Error> {
     let number = number.trim().to_ascii_uppercase();
     if number.len() == ID_V1_LEN && is_digital(&number) {
         let mut idv2 = String::new();
-
         let birthday = "19".to_owned() + &number[6..12];
         let birth_date = NaiveDate::parse_from_str(&birthday, "%Y%m%d");
 
@@ -631,7 +534,7 @@ fn string_to_integer_array(s: &str) -> Result<Vec<u32>, Error> {
     let mut v: Vec<u32> = Vec::new();
     for ch in s.chars() {
         match ch.to_digit(10) {
-            Some(i) => v.push(i as u32),
+            Some(i) => v.push(i),
             None => return Err(Error::InvalidNumber),
         }
     }
@@ -658,70 +561,49 @@ mod tests {
     use super::*;
 
     #[test]
-    fn upgrade_v1_to_v2() {
+    fn test_upgrade() {
         let id = Identity::new("632123820927051");
         assert_eq!(id.is_valid(), true);
         assert_eq!(id.number(), "632123198209270518");
-
         let id = upgrade("310112850409522").unwrap();
         assert_eq!(&id, "310112198504095227");
     }
 
     #[test]
-    fn validate_v1_and_v2() {
+    fn test_validate() {
         assert_eq!(validate("511702800222130"), true);
         assert_eq!(validate("230127197908177456"), true);
     }
 
     #[test]
-    fn show_details() {
+    fn test_compute_age() {
         let id = Identity::new("511702800222130");
-        println!("{}", id.to_json_string(true));
-
-        let id = Identity::new("51170280022213X");
-        println!("{}", id.to_json_string(false));
-    }
-
-    #[test]
-    fn calc_age() {
-        let id = Identity::new("511702800222130");
-        assert_eq!(id.age(), Some(41));
         assert_eq!(id.age_in_year(2020), Some(40));
         assert_eq!(id.age_in_year(1980), Some(0));
         assert_eq!(id.age_in_year(1900), None);
     }
 
     #[test]
-    fn test_some_utilities() {
+    fn test_utilities() {
         assert_eq!(chinese_zodiac(1000), Some("鼠"));
         assert_eq!(chinese_zodiac(1900), Some("鼠"));
         assert_eq!(chinese_zodiac(2021), Some("牛"));
-
         assert_eq!(chinese_era(1000), Some("庚子".to_string()));
         assert_eq!(chinese_era(1900), Some("庚子".to_string()));
         assert_eq!(chinese_era(2021), Some("辛丑".to_string()));
-
         assert_eq!(constellation(10, 25), Some("天蝎座"));
         assert_eq!(constellation(2, 29), Some("双鱼座"));
         assert_eq!(constellation(0, 32), None);
     }
 
     #[test]
-    fn query_region() {
-        let name = region::query("511702").unwrap();
-        assert_eq!(name, "四川省达州市通川区");
-    }
-
-    #[test]
-    fn compare() {
+    fn test_identity() {
         let a = Identity::new("632123820927051");
         let b = Identity::new("632123198209270518");
         assert_eq!(a == b, true);
-
         let a = Identity::new("21021119810503545X");
         let b = Identity::new("21021119810503545x");
         assert_eq!(a == b, true);
-
         let a = Identity::new("330421197402080974");
         let b = Identity::new("130133197909136078");
         assert_eq!(a != b, true);
