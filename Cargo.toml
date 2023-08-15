@@ -1,6 +1,6 @@
 [package]
 name = "idcard"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["hiql <qiu_lin@163.com>"]
 edition = "2018"
 license = "MIT"
